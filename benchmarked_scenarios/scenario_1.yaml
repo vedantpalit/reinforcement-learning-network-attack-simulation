@@ -1,0 +1,114 @@
+subnets:
+  - 1
+  - 1
+  - 1
+  - 1 # This is the fifth subnet, indicating the "internet" subnet (0, ...)
+
+# Updated topology definition
+topology:
+  - [1, 1, 0, 0, 0]  # Internet (subnet 0) is only connected to Subnet 1
+  - [1, 1, 1, 0, 1]  # Subnet 1 is connected to Internet (subnet 0), Subnet 2, and Subnet 4
+  - [0, 1, 1, 1, 0]  # Subnet 2 is connected to Subnet 1 and Subnet 3
+  - [0, 0, 1, 1, 1]  # Subnet 3 is connected to Subnet 2 and Subnet 4
+  - [0, 1, 0, 1, 1]  # Subnet 4 is connected to Subnet 1 and Subnet 3
+
+os:
+  - linux
+  - windows
+
+services:
+  - ssh
+  - zsh
+  - bash
+
+processes:
+  - tomcat
+  - cannery
+  - civet
+
+host_configurations:
+  (1, 0):
+    os: linux
+    services: [ssh]
+    processes: [tomcat, civet]
+    value: 50
+
+  (2, 0):
+    os: linux
+    services: [bash]
+    processes: [tomcat]
+    value: 50
+
+  (3, 0):
+    os: linux
+    services: [bash]
+    processes: [tomcat, cannery]
+    value: 50
+
+  (4, 0):
+    os: linux
+    services: [ssh]
+    processes: [civet, cannery]
+    value: 50
+
+firewall:
+  # Connections from Subnet 0 ("internet")
+  (0, 1): [ssh]
+  (1, 0): []
+  
+  # Connections between Subnet 1 and other subnets
+  (1, 2): []
+  (2, 1): []
+  (1, 4): [ssh]
+  (4, 1): [ssh]
+
+  # Connections between Subnet 2 and other subnets
+  (2, 3): [bash]
+  (3, 2): [bash]
+
+  # Connection between Subnet 3 and Subnet 4
+  (3, 4): []
+  (4, 3): []
+
+sensitive_hosts:
+  (2, 0): 100
+  (3, 0): 50
+  (4 ,0): 100
+
+exploits:
+  e_ssh:
+    service: ssh
+    os: linux
+    prob: 0.8
+    cost: 1
+    access: user
+  e_bash:
+    service: bash
+    os: linux
+    prob: 0.9
+    cost: 1
+    access: user
+
+privilege_escalation:
+  pe_tomcat:
+    process: tomcat
+    os: linux
+    prob: 1.0
+    cost: 1
+    access: root
+  pe_civet:
+    process: civet
+    os: linux
+    prob: 1.0
+    cost: 1
+    access: root
+
+service_scan_cost: 1
+os_scan_cost: 1
+subnet_scan_cost: 1
+process_scan_cost: 1
+  
+step_limit: 500
+
+
+
