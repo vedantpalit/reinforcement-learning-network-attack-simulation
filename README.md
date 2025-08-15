@@ -1,4 +1,3 @@
-# reinforcement-learning-network-attack-simulation
 # Reinforcement Learning Network Attack Simulation
 
 ## Overview
