@@ -140,12 +140,84 @@ Network scenarios are defined in YAML format and stored in the `benchmarked_scen
 
 ### Example Scenario Structure
 ```yaml
-# scenario_tiny.yaml
-hosts: 3
-services: 2
-topology: [2, 1]
-step_limit: 200
-# ... additional configuration
+subnets:
+  - 1
+  - 1
+  - 1
+
+topology: [[ 1, 1, 0, 0],
+           [ 1, 1, 1, 1],
+           [ 0, 1, 1, 1],
+           [ 0, 1, 1, 1]]
+
+
+os:
+  - linux
+services:
+  - ssh
+processes:
+  - tomcat
+
+host_configurations:
+  (1, 0):
+    os: linux
+    services: [ssh]
+    processes: [tomcat]
+    # which services to deny between individual hosts
+    firewall:
+      (3, 0): [ssh]
+    value: 0
+  (2, 0):
+    os: linux
+    services: [ssh]
+    processes: [tomcat]
+    firewall:
+      (1, 0): [ssh]
+  (3, 0):
+    os: linux
+    services: [ssh]
+    processes: [tomcat]
+
+firewall:
+  (0, 1): [ssh]
+  (1, 0): []
+  (1, 2): []
+  (2, 1): [ssh]
+  (1, 3): [ssh]
+  (3, 1): [ssh]
+  (2, 3): [ssh]
+  (3, 2): [ssh]
+
+
+
+sensitive_hosts:
+  (2, 0): 100
+  (3, 0): 100
+  
+
+exploits:
+  e_ssh:
+    service: ssh
+    os: linux
+    prob: 0.8
+    cost: 1
+    access: user
+
+
+privilege_escalation:
+  pe_tomcat:
+    process: tomcat
+    os: linux
+    prob: 1.0
+    cost: 1
+    access: root
+
+service_scan_cost: 1
+os_scan_cost: 1
+subnet_scan_cost: 1
+process_scan_cost: 1
+
+step_limit: 60000
 ```
 
 ## Benchmarking Workflow
